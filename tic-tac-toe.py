@@ -28,7 +28,8 @@ class TicTacToe:
 
     def print_board(self):
         for i in range(3):
-            print(f"{self.board[i][0]}  | {self.board[i][1]} | {self.board[i][2]}")
+            print(f"{self.board[i][0]}  | {
+                  self.board[i][1]} | {self.board[i][2]}")
 
             if i < 2:
                 print("-" * 11)
@@ -138,5 +139,6 @@ if __name__ == "__main__":
         ttt.main()
 
         n = input("\nWant to play Again : Y/N ")
+
         if n == "N":
             break
