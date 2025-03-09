@@ -5,17 +5,10 @@ import random
 
 
 class TicTacToe:
-    def __init__(self):
-        self.board = [[" "] * 3 for _ in range(3)]
+    def __init__(self, size):
+        self.size = size
+        self.board = [[" "] * self.size for _ in range(self.size)]
         self.Player = {1: None, 2: None}
-
-    def print_board(self):
-        for i in range(3):
-            print(f"{self.board[i][0]}  | {
-                  self.board[i][1]} | {self.board[i][2]}")
-
-            if i < 2:
-                print("-" * 11)
 
     def print_board_1(self):
         for i, v in enumerate(self.board):
@@ -24,7 +17,7 @@ class TicTacToe:
                 print("-" * 9)
 
     def print_board_status(self):
-        sep = "\n" + "-" * (len(self.board) * 4 - 3) + "\n"
+        sep = "\n" + "-" * (len(self.size) * 4 - 3) + "\n"
         print("\n" + sep.join(" | ".join(col) for col in self.board) + "\n")
 
     def choose_symbol(self):
