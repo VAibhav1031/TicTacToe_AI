@@ -21,6 +21,10 @@ class TicTacToe:
         print("\n" + sep.join(" | ".join(col) for col in self.board) + "\n")
 
     def choose_symbol(self):
+        """
+        Most important function to randomly choose which player is gonna have
+        the which symbol
+        """
         p = ["X", "O"]
         player1 = random.choice(p)
         p.remove(player1)
@@ -29,6 +33,10 @@ class TicTacToe:
         return player1, player2
 
     def make_move(self, player):
+        """
+        This function helps in  making move and same time checking if it valid
+        or invalid
+        """
         while True:
             try:
                 ro = int(input(f"Enter the row {self.Player[player]} : "))
@@ -43,6 +51,9 @@ class TicTacToe:
             print(f"Please enter the value from 1 to {len(self.board)}")
 
     def play_one_round(self, player):
+        """
+        Function for running one round in Tic-Tac-Toe game
+        """
         while True:
             row, col = self.make_move(player)
 
@@ -53,6 +64,9 @@ class TicTacToe:
             print("Space is already occupied")
 
     def iswin(self, player):
+        """
+        Function for checking does the player has won the match or not
+        """
         if (
             (
                 self.board[0][0] == player
@@ -93,6 +107,16 @@ class TicTacToe:
         return True
 
     def main(self):
+        """
+        This main  function where all different functionality come/align and
+        meet and help in working of whole process :-
+            1. we will working choosing which symbol is gonna for which one
+            2. printing the print_board_status before starting the match
+            3. calling play_one_round , printing updated board status
+            4. Checking that player has won
+            5. Plus it is important to check whether the match is drawn or not
+            6. most important to rotate between the player's
+        """
         self.Player[1], self.Player[2] = self.choose_symbol()
         player = 1
         self.print_board()
@@ -111,7 +135,7 @@ class TicTacToe:
 
 if __name__ == "__main__":
     ttt = TicTacToe()
-    while True:
+    while True:  # added the play again feature
         ttt.main()
 
         n = input("\nWant to play Again : Y/N ")
