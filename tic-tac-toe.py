@@ -117,11 +117,28 @@ class TicTacToe:
 
 
 if __name__ == "__main__":
-    ttt = TicTacToe()
-    while True:
-        ttt.main()
 
-        n = input("\nWant to play Again : Y/N ")
+    def play():
+        print("Welcome to Tic Tac Toe!")
+        while True:
+            try:
+                size = int(input("\nEnter the size of the board (N x N): "))
+                if size < 3:
+                    print("Size must be at least 3.")
+                    continue
+                break
+            except ValueError as e:
+                print(f"Error: {e}")
 
-        if n == "N":
-            break
+        computer_player = (
+            input("Play against the computer? (Y/N): ").strip().upper() == "Y"
+        )
+
+        while True:
+            ttt = TicTacToe(size, computer_player)
+            ttt.main()
+            n = input("\nWant to play again? (Y/N): ").strip().upper()
+            if n != "Y":
+                break
+
+    play()
