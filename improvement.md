@@ -1,18 +1,25 @@
+# TicTacToe Development Progress 📝
 
-## first need to print the board
+This document tracks improvements and development status for the TicTacToe project.
 
--   Simplify the iswin method using loops or a more generalized approach.
+## Completed Improvements ✅
 
-[x]-   Make the board size configurable (e.g., via a parameter in the constructor).
+- [x] First implementation: Print the board
+- [x] Simplify the iswin method using loops or a more generalized approach
+- [x] Make the board size configurable (e.g., via a parameter in the constructor)
+- [x] Improve input handling in make_move to ensure the user is prompted until valid input is provided
+- [x] Modularize the main method by breaking it into smaller, reusable methods
+- [x] Add a "play again" feature to allow multiple games without restarting the program
+- [x] Improve error messages and user prompts for better clarity
 
--   Improve input handling in make_move to ensure the user is prompted until valid input is provided.
+## In Progress 🚧
 
--   Add an AI opponent for single-player mode.
+- [ ] Add an AI opponent for single-player mode (partially implemented)
 
--    Modularize the main method by breaking it into smaller, reusable methods.
+## Optimization Roadmap 🔄
 
--   Add a "play again" feature to allow multiple games without restarting the program.
-
--    Improve error messages and user prompts for better clarity.
-
-
+- [ ] Improve the optimization:
+  - [ ] Add Alpha-Beta Pruning 
+  - [ ] Add memoization in minimax, avoiding recalculation of the same input
+  - [ ] Increase rewarding mechanism making AI algorithm give tougher competition
+  - [ ] Evaluate the line, use best moves, check if taking center is best or not
