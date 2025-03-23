@@ -19,7 +19,6 @@ class TicTacToe:
         self.board = [[" "] * self.size for _ in range(self.size)]
         self.Players = {1: None, 2: None}
         self.PlayersName = {1: None, 2: None}
-
         self.computer_player = computer_player
 
     def printBoardStatus(self):
