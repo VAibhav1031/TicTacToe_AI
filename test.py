@@ -19,6 +19,7 @@ class TicTacToe:
         self.Players = {1: None, 2: None}
         self.PlayersName = {1: None, 2: None}
         self.computer_player = computer_player
+        self.memo = {}
 
     def printBoardStatus(self):
         sep = "\n" + "-" * (self.size * 4 - 3) + "\n"
@@ -34,10 +35,10 @@ class TicTacToe:
 
         return symbol[0], symbol[1]
 
-    def makeMove(self, player: int):
+    def makeMove(self, player: int, board):
         if self.computer_player and player == 2:
             print("Computers Turn ")
-            row, col, best_sc = self.find_best_move()
+            row, col, best_sc = self.find_best_move(board)
 
             if row == -1 and col == -1:
                 print("Error in Selection by AI")
@@ -63,65 +64,67 @@ class TicTacToe:
 
             print(f"Enter the valid Range between the 1  and {len(self.board)} ")
 
-    def playOneRound(self, player: int) -> None:
+    def playOneRound(self, player: int, board) -> None:
         """
         Handle a single round of the game.
         """
         while True:
-            row, col = self.makeMove(player)
+            row, col = self.makeMove(player, board)
             if self.board[row][col] == " ":
                 self.board[row][col] = self.Players[player]
 
                 break
             print("Space is occupied.")
 
-    def check_winner(self):
+    def check_winner(self, board):
         """
         Check for a winner based on the last move.
         """
-        n = len(self.board)
+        n = len(board)
 
         for row in range(n):
-            if self.board[row][0] != " " and all(
-                self.board[row][0] == self.board[row][col] for col in range(n)
+            if board[row][0] != " " and all(
+                board[row][0] == board[row][col] for col in range(n)
             ):
-                return self.board[row][0]
+                return board[row][0]
 
         # for columns
         for col in range(n):
-            if self.board[0][col] != " " and all(
-                self.board[0][col] == self.board[row][col] for row in range(n)
+            if board[0][col] != " " and all(
+                board[0][col] == board[row][col] for row in range(n)
             ):
-                return self.board[0][col]
+                return board[0][col]
 
         # Diagonal
-        if self.board[0][0] != " " and all(
-            self.board[0][0] == self.board[i][i] for i in range(n)
-        ):
-            return self.board[0][0]
+        if board[0][0] != " " and all(board[0][0] == board[i][i] for i in range(n)):
+            return board[0][0]
 
-        if self.board[0][n - 1] != " " and all(
-            self.board[0][n - 1] == self.board[i][n - 1 - i] for i in range(n)
+        if board[0][n - 1] != " " and all(
+            board[0][n - 1] == board[i][n - 1 - i] for i in range(n)
         ):
-            return self.board[0][n - 1]
+            return board[0][n - 1]
 
         return None
 
-    def minimax(self, board, is_maximizing, depth):
-        winner = self.check_winner()
+    def minimax(
+        self, board, is_maximizing, depth=None, alpha=-float("inf"), beta=float("inf")
+    ):
+        if depth is None:
+            depth = min(6, len([cell for row in board for cell in row if cell == " "]))
+
+        # Convert board to tuple for hashing
+        board_key = tuple(tuple(row) for row in board)
+        if board_key in self.memo:
+            return self.memo[board_key]
+
+        winner = self.check_winner(board)
         if winner == self.Players[1]:
-            return 1
+            return 100 + depth
 
         elif winner == self.Players[2]:
-            return -1
+            return -100 - depth
 
-        elif self.draw():
-            return 0
-
-        elif depth == 0:
-            # return 0
-            # i dont know why we are returning the zero  because it is not helping us
-            # we just reached our depth of calculation we should give result according the condition of the board
+        elif self.draw(board) or depth == 0:
             return self.evaluate_board(board)
 
         if is_maximizing:
@@ -129,12 +132,15 @@ class TicTacToe:
             for row in range(self.size):
                 for col in range(self.size):
                     if board[row][col] == " ":
-                        board[row][col] = self.Players[2]  # computer Move
-                        score = self.minimax(board, False, depth - 1)
-                        # undoing the changes || BAcktracking baby
-                        board[row][col] = " "
-                        maxeval = max(score, maxeval)
+                        tmp_board = [list(row) for row in board]
+                        tmp_board[row][col] = self.Players[2]  # computer Move
+                        score = self.minimax(tmp_board, False, depth - 1)
 
+                        maxeval = max(score, maxeval)
+                        alpha = max(alpha, maxeval)
+                        if beta <= alpha:
+                            break
+            self.memo[board_key] = maxeval
             return maxeval
 
         else:
@@ -142,40 +148,88 @@ class TicTacToe:
             for row in range(self.size):
                 for col in range(self.size):
                     if board[row][col] == " ":
-                        board[row][col] = self.Players[1]
-                        score = self.minimax(board, True, depth - 1)
-                        # undoing the changes ||  BAcktracking BAby
-                        board[row][col] = " "
-                        mineval = min(score, mineval)
+                        tmp_board = [list(row) for row in board]
+                        tmp_board[row][col] = self.Players[1]
+                        score = self.minimax(tmp_board, True, depth - 1)
 
+                        mineval = min(score, mineval)
+                        beta = min(beta, mineval)
+                        if beta <= alpha:
+                            break
+
+            self.memo[board_key] = mineval
             return mineval
 
     def evaluate_board(self, board):
-        # Check for immediate wins
-        if self.check_winner() == self.Players[1]:  # Player 1 wins
-            return 1
-        elif self.check_winner() == self.Players[2]:  # Player 2 wins
-            return -1
+        score = 0
 
-        # Initialize scores for both players
-        player1_score = 0
-        player2_score = 0
+        # Check rows, columns, and diagonals
+        for i in range(self.size):
+            score += self.evaluate_line([board[i][j] for j in range(self.size)])  # Row
+            score += self.evaluate_line(
+                [board[j][i] for j in range(self.size)]
+            )  # Column
 
-        # Check rows, columns, and diagonals for potential wins
-        for line in self.get_all_lines(board):
-            player1_count = line.count(self.Players[1])
-            player2_count = line.count(self.Players[2])
-            empty_count = line.count(" ")
+        score += self.evaluate_line(
+            [
+                board[i][i]
+                # Main diagonal
+                for i in range(self.size)
+            ]
+        )
+        score += self.evaluate_line(
+            [
+                board[i][self.size - i - 1]
+                # Anti-diagonal
+                for i in range(self.size)
+            ]
+        )
 
-            # Player 1 has a potential win
-            if player1_count == self.size - 1 and empty_count == 1:
-                player1_score += 1
-            # Player 2 has a potential win
-            elif player2_count == self.size - 1 and empty_count == 1:
-                player2_score += 1
+        return score
 
-        # Heuristic value: Player 1's advantage minus Player 2's advantage
-        return player1_score - player2_score
+    def evaluate_line(self, line):
+        """Assigns scores based on how strong a row/col/diagonal is."""
+        ai_count = line.count(self.Players[2])  # AI's symbol
+        human_count = line.count(self.Players[1])  # Player's symbol
+
+        if ai_count > 0 and human_count == 0:
+            return 10**ai_count  # AI advantage
+        elif human_count > 0 and ai_count == 0:
+            return -(10**human_count)  # Player advantage
+        return 0  # Neutral
+
+    # def evaluate_board(self, board):
+    #     # Check for immediate wins
+    #     if self.check_winner(board) == self.Players[1]:  # Player 1 wins
+    #         return 100
+    #     elif self.check_winner(board) == self.Players[2]:  # Player 2 wins
+    #         return -100
+    #
+    #     # Initialize scores for both players
+    #     player1_score = 0
+    #     player2_score = 0
+    #
+    #     # Check rows, columns, and diagonals for potential wins
+    #     for line in self.get_all_lines(board):
+    #         player1_count = line.count(self.Players[1])
+    #         player2_count = line.count(self.Players[2])
+    #         empty_count = line.count(" ")
+    #
+    #         # Player 1 has a potential win
+    #         if player1_count == self.size - 1 and empty_count == 1:
+    #             player1_score += 10
+    #         # Player 2 has a potential win
+    #         elif player2_count == self.size - 1 and empty_count == 1:
+    #             player2_score += 10
+    #
+    #         elif player1_count == self.size - 2 and empty_count == 2:
+    #             player1_score += 3
+    #
+    #         elif player2_count == self.size - 2 and empty_count == 2:
+    #             player2_score += 3
+    #
+    #     # Heuristic value: Player 1's advantage minus Player 2's advantage
+    #     return player1_score - player2_score
 
     def get_all_lines(self, board):
         # so basically we have  to  make  a list which  contain rows, columns  and diagonal as a list
@@ -197,7 +251,7 @@ class TicTacToe:
 
         return lisssst
 
-    def find_best_move(self):
+    def find_best_move(self, board):
         best_score = -float("inf")
         best_move = (-1, -1)
 
@@ -205,46 +259,43 @@ class TicTacToe:
             for col in range(self.size):
                 if self.board[row][col] == " ":
                     # Check if AI can win immediately
-                    self.board[row][col] = self.Players[2]
-                    if self.check_winner() == self.Players[2]:
-                        self.board[row][col] = " "  # Undo move
-                        return row, col, best_score
-                    self.board[row][col] = " "  # Undo move
+                    tmp_board = [list(row) for row in board]
+                    tmp_board[row][col] = self.Players[2]
+                    if self.check_winner(tmp_board) == self.Players[2]:
+                        return row, col, 100
 
         # **Check if the opponent can win next turn, block that move**
         for row in range(self.size):
             for col in range(self.size):
                 if self.board[row][col] == " ":
-                    self.board[row][col] = self.Players[1]
+                    tmp_board = [list(row) for row in board]
+                    tmp_board[row][col] = self.Players[1]
                     # If the opponent can win, block it
-                    if self.check_winner() == self.Players[1]:
-                        self.board[row][col] = " "  # Undo move
-                        return row, col, best_score
-                    self.board[row][col] = " "  # Undo move
+                    if self.check_winner(tmp_board) == self.Players[1]:
+                        return row, col, 50
 
         # **If no immediate win/block, use minimax**
         for row in range(self.size):
             for col in range(self.size):
                 if self.board[row][col] == " ":
-                    self.board[row][col] = self.Players[2]  # AI move
+                    tmp_board = [list(row) for row in board]
+                    tmp_board[row][col] = self.Players[2]  # AI move
                     # Now AI is maximizing
-                    score = self.minimax(self.board, False, 5)
-                    self.board[row][col] = " "  # Undo move
-
+                    score = self.minimax(tmp_board, False, 5)
                     if score > best_score:
                         best_score = score
                         best_move = (row, col)
 
         return best_move[0], best_move[1], best_score
 
-    def draw(self):
+    def draw(self, board):
         """
         This is Used to check for the Draw Situation in the Game
         """
         return all(
             self.board[i][j] != " "
-            for i in range(len(self.board))
-            for j in range(len(self.board))
+            for i in range(len(board))
+            for j in range(len(board))
         )
 
     def main(self):
@@ -269,17 +320,17 @@ class TicTacToe:
                     self.Players[player]
                 }\n"
             )
-            self.playOneRound(player)
+            self.playOneRound(player, self.board)
             self.printBoardStatus()
-            if self.check_winner() == self.Players[player]:
+            if self.check_winner(self.board) == self.Players[player]:
                 print(
-                    f"Player {self.PlayersName[player]} (Symbol: {
+                    f"Player {self.PlayersName[player].upper()} (Symbol: {
                         self.Players[player]
                     })  Won!!!"
                 )
                 break
 
-            if self.draw():
+            if self.draw(self.board):
                 print("Draw !!!!  ")
                 break
             player = player % len(self.Players) + 1
@@ -293,7 +344,7 @@ if __name__ == "__main__":
             try:
                 size = int(input("\nEnter the size of the board NXN : \n"))
                 if size < 3:
-                    print("Size must be greater than ")
+                    print("Size must be greater than 3")
                     continue
                 break
             except ValueError as e:

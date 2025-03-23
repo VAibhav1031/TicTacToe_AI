@@ -14,12 +14,12 @@ This document tracks improvements and development status for the TicTacToe proje
 
 ## In Progress 🚧
 
-- [ ] Add an AI opponent for single-player mode (partially implemented)
+- [x] Add an AI opponent for single-player mode 
 
 ## Optimization Roadmap 🔄
 
 - [ ] Improve the optimization:
-  - [ ] Add Alpha-Beta Pruning 
+  - [x] Add Alpha-Beta Pruning 
   - [ ] Add memoization in minimax, avoiding recalculation of the same input
   - [ ] Increase rewarding mechanism making AI algorithm give tougher competition
-  - [ ] Evaluate the line, use best moves, check if taking center is best or not
+  - [ ] Evaluate the line, use best moves, check if taking center is best or not (partially implemented)
